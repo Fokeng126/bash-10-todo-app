@@ -91,6 +91,9 @@ cmd_list() {
 cmd_done() {
     local id="$1"
 
+    # Check if the user entered a task ID
+    [ -n "$id" ] || die "Please provide a task ID."
+
     # Check if the task ID exists
     if ! awk -F'|' -v id="$id" '
         $1 == id { found=1 }
@@ -101,7 +104,7 @@ cmd_done() {
 
     # Create a temporary file
     local temp_file
-    temp_file=$(mktemp)
+    temp_file=$(mktemp) || die "Cannot create temporary file."
 
     # Change the matching task to done
     awk -F'|' -v OFS='|' -v id="$id" '
@@ -111,7 +114,7 @@ cmd_done() {
         {
             print
         }
-    ' "$DATA_FILE" > "$temp_file"
+    ' "$DATA_FILE" > "$temp_file" || die "Cannot update task."
 
     # Replace the old file
     mv "$temp_file" "$DATA_FILE" || die "Cannot update task."
@@ -123,6 +126,9 @@ cmd_done() {
 cmd_delete() {
     local id="$1"
 
+    # Check if the user entered a task ID
+    [ -n "$id" ] || die "Please provide a task ID."
+
     # Check if the task ID exists
     if ! awk -F'|' -v id="$id" '
         $1 == id { found=1 }
@@ -133,14 +139,14 @@ cmd_delete() {
 
     # Create a temporary file
     local temp_file
-    temp_file=$(mktemp)
+    temp_file=$(mktemp) || die "Cannot create temporary file."
 
     # Copy every task except the matching one
     awk -F'|' -v id="$id" '
         $1 != id {
             print
         }
-    ' "$DATA_FILE" > "$temp_file"
+    ' "$DATA_FILE" > "$temp_file" || die "Cannot delete task."
 
     # Replace the old file
     mv "$temp_file" "$DATA_FILE" || die "Cannot delete task."
@@ -179,5 +185,6 @@ case "$1" in
 
     *)
         echo "Unknown command"
+        exit 1
         ;;
 esac
