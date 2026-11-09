@@ -92,6 +92,31 @@ cmd_done() {
     echo "Task $id done"
 }
 
+# Function to delete a task
+cmd_delete() {
+
+    # Get the task ID
+    local id="$1"
+
+    # Check if the task ID exists
+    if ! awk -F'|' -v id="$id" '$1 == id { found=1 } END { exit !found }' "$DATA_FILE"; then
+        die "Task ID $id not found."
+    fi
+
+    # Create a temporary file
+    local temp_file
+    temp_file=$(mktemp)
+
+    # Copy every task except the matching ID
+    awk -F'|' -v id="$id" '$1 != id { print }' "$DATA_FILE" > "$temp_file"
+
+    # Replace the old file with the updated temporary file
+    mv "$temp_file" "$DATA_FILE"
+
+    # Tell the user the task was deleted
+    echo "Task $id deleted"
+}
+
 # Create the storage before running commands
 init_storage
 
@@ -113,6 +138,12 @@ case "$1" in
     done)
         shift
         cmd_done "$1"
+        ;;
+
+    # Delete a task
+    delete)
+        shift
+        cmd_delete "$1"
         ;;
 
     # Display help information
