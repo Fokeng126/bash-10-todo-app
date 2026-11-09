@@ -60,6 +60,38 @@ cmd_list() {
     }' "$DATA_FILE"
 }
 
+# Function to mark a task as done
+cmd_done() {
+
+    # Get the task ID
+    local id="$1"
+
+    # Check if the task ID exists
+    if ! awk -F'|' -v id="$id" '$1 == id { found=1 } END { exit !found }' "$DATA_FILE"; then
+        die "Task ID $id not found."
+    fi
+
+    # Create a temporary file
+    local temp_file
+    temp_file=$(mktemp)
+
+    # Find the matching task and change its status to done
+    awk -F'|' -v OFS='|' -v id="$id" '
+        $1 == id {
+            $2 = "done"
+        }
+        {
+            print
+        }
+    ' "$DATA_FILE" > "$temp_file"
+
+    # Replace the old file with the updated temporary file
+    mv "$temp_file" "$DATA_FILE"
+
+    # Tell the user the task is done
+    echo "Task $id done"
+}
+
 # Create the storage before running commands
 init_storage
 
@@ -75,6 +107,12 @@ case "$1" in
     # Display all tasks
     list)
         cmd_list
+        ;;
+
+    # Mark a task as done
+    done)
+        shift
+        cmd_done "$1"
         ;;
 
     # Display help information
