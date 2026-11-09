@@ -62,11 +62,29 @@ cmd_add() {
 
 # Function to display all tasks
 cmd_list() {
+    # Print the table headings
     printf "%-4s %-8s %-10s %s\n" "ID" "STATUS" "PRIORITY" "TITLE"
 
-    awk -F'|' '{
-        printf "%-4s %-8s %-10s %s\n", $1, $2, $3, $4
-    }' "$DATA_FILE"
+    # Show high priority tasks first
+    awk -F'|' '$3 == "high"' "$DATA_FILE" |
+        while IFS='|' read -r id status priority title; do
+            printf "%-4s %-8s %-10s %s\n" \
+                "$id" "$status" "$priority" "$title"
+        done
+
+    # Show medium priority tasks second
+    awk -F'|' '$3 == "medium"' "$DATA_FILE" |
+        while IFS='|' read -r id status priority title; do
+            printf "%-4s %-8s %-10s %s\n" \
+                "$id" "$status" "$priority" "$title"
+        done
+
+    # Show low priority tasks last
+    awk -F'|' '$3 == "low"' "$DATA_FILE" |
+        while IFS='|' read -r id status priority title; do
+            printf "%-4s %-8s %-10s %s\n" \
+                "$id" "$status" "$priority" "$title"
+        done
 }
 
 # Function to mark a task as done
