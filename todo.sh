@@ -46,6 +46,13 @@ cmd_add() {
 
     [ -n "$title" ] || die "Please provide a task title."
 
+    # Reject | because it is used as the data separator
+    case "$title" in
+        *"|"*)
+            die "Task title cannot contain |."
+            ;;
+    esac
+
     case "$priority" in
         low|medium|high)
             ;;
@@ -159,7 +166,7 @@ cmd_delete() {
 init_storage
 
 # Check the command entered by the user
-case "$1" in
+case "${1:-list}" in
     add)
         shift
         cmd_add "$@"
