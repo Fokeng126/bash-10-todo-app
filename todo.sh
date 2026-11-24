@@ -1,5 +1,5 @@
-
 #!/bin/bash
+
 
 # Store the location of our todo file
 # Use TODO_FILE if provided, otherwise use the default location
