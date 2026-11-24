@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 # Store the location of our todo file
@@ -38,6 +39,8 @@ cmd_add() {
     local priority="medium"
 
     if [ "$1" = "-p" ]; then
+        [ -n "$2" ] || die "Please provide a priority after -p."
+
         priority="$2"
         shift 2
     fi
@@ -82,6 +85,11 @@ cmd_add() {
 
 # Function to display all tasks
 cmd_list() {
+    if [ ! -s "$DATA_FILE" ]; then
+        echo "No tasks yet. Add one with: ./todo.sh add \"Your task\""
+        return
+    fi
+
     printf "%-4s %-8s %-10s %s\n" "ID" "STATUS" "PRIORITY" "TITLE"
 
     awk -F'|' '
